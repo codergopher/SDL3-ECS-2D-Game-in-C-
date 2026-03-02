@@ -1,0 +1,3 @@
+C:/Users/getma/Desktop/Dev/Tutorial/CMakeFiles/Main.dir
+C:/Users/getma/Desktop/Dev/Tutorial/CMakeFiles/edit_cache.dir
+C:/Users/getma/Desktop/Dev/Tutorial/CMakeFiles/rebuild_cache.dir

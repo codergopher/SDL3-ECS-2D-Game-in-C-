@@ -1,0 +1,202 @@
+1. Download and install msys2
+
+	https://www.msys2.org/
+
+2. Install mingw-w64, make, and cmake
+	
+	In mysys2:
+
+	pacman -Syu 
+	pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain
+	pacman -S mingw-w64-ucrt-x86_64-cmake
+
+3. Add cmake to the PATH variable
+
+	Open CMD as admin and run:
+
+	setx /M PATH "%PATH%; C:\msys64\ucrt64\bin"
+
+	Start new cmd and run:
+
+	g++
+	cmake --version
+
+4. Install sublime text 4
+
+	https://www.sublimetext.com/download
+
+	Press Ctrl + Shift + P to bring up the command palette -> Install package control
+	
+	Via Package Control, install Icons, PackageResourceViewer
+
+5. Customize Sublime Text // Optional
+
+	a) Remove garbage text from debugging window
+
+		-PackageResourceViewer -> Open Resource -> Default -> exec.py
+		-Comment out line 393 #self.write(self.debug_text)
+
+	b) Configure settings
+
+		Add these lines to the settings JSON file
+
+		"file_exclude_patterns":[],
+		"word_wrap": true,
+		"remember_open_files": false,
+		"hot_exit": false
+
+	c) Pick a nice color scheme and theme.
+
+6. Create a project directory
+	
+	a) Open CMD, navigate to the Desktop and create a Dev folder, and create a Main folder(our project folder)
+
+	mkdir Dev
+	cd Dev
+	mkdir Main
+	cd Main
+
+
+	b) Run the following commands to create these folders and files:
+
+	mkdir src 
+	type nul> CMakeLists.txt
+	type nul> toolchain.cmake
+	type nul> build.bat
+	type nul> run.bat
+	type nul> clean.bat
+
+6. Create a Sublime Text project file with cmake, and a build system
+
+	a) Write the CMakeLists.txt file, as follows:
+
+cmake_minimum_required (VERSION 4.1)
+
+project (Main)
+
+#Compiler flags
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -m64 -g -Wall -fno-omit-frame-pointer -L ")
+
+set (source_dir "${PROJECT_SOURCE_DIR}/src")
+
+//We want to output our .exe to the "bin" dir, and if we make any .a or .dll.a files we'll output them to "lib"
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+
+#This list should contain all your include directories
+set (include_list "")
+#list (APPEND include_list "$C:/Foo/include") 
+
+
+#This list should contain all your link libraries, such as .a files for static linking, and .dll.a files for dynamic linking
+#If you have a library installed via MSYS2 you can append it to the list with just -lfoo for example
+set (lib_list "")
+#list (APPEND lib_list "-lfoo")
+
+file (GLOB_RECURSE source_files "${source_dir}/*.cpp")
+
+add_executable (Main ${source_files})
+
+target_link_libraries(Main PRIVATE ${lib_list})
+
+target_include_directories(Main PRIVATE src ${include_list})
+
+
+
+	b) Write the toolchain.cmake file, as follows:
+
+set(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_SYSTEM_PROCESSOR x86_64)
+
+find_program(CMAKE_C_COMPILER NAMES x86_64-w64-mingw32-gcc REQUIRED)
+find_program(CMAKE_CXX_COMPILER NAMES x86_64-w64-mingw32-g++ REQUIRED)
+find_program(CMAKE_RC_COMPILER NAMES x86_64-w64-mingw32-windres windres REQUIRED)
+
+
+	c) Write the build.bat file, as follows:
+
+@echo off
+
+cmake . -G "Sublime Text 2 - MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake
+pause
+
+
+	d) Write the clean.bat file, as follows:
+
+@echo off
+
+del "CMakeCache.txt"
+del "Makefile"
+del "cmake_install.cmake"
+
+rmdir /s /q "CMakeFiles"
+
+	e) Write the run.bat file, as follows:
+
+@echo off
+
+cd bin
+start cmd /c Main
+
+
+	f) Run the build.bat file to generate the .sublime-project file
+
+	g) Run the clean.bat file to delete the build system we just made, but keep the project file
+
+	h) Edit build.bat and remove the "Sublime Text 2" line from the build command
+
+cmake . -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake
+
+	i) Run build.bat
+
+
+7. Edit the sublime text project file, and make these changes:
+
+	Rename the first build system to Build, and open a "variants" list which will contain all the others.
+
+	Add a new variant called "Run", and include "&& run" in the command line
+
+
+8. Setup SDL as an example
+	
+	a) Download SDL3.
+
+	b) Add these lines to the CMakeList.txt:
+
+
+set (SDL3_dir "C:/Users/getma/Libraries/SDL3-3.4.0/x86_64-w64-mingw32")
+
+set (SDL3_dir "C:/Users/getma/Libraries/SDL3-3.4.0/x86_64-w64-mingw32")
+list (APPEND include_list "${SDL3_dir}/include")
+
+list (APPEND lib_list "${SDL3_dir}/lib/libSDL3.dll.a")
+
+9. Install Jsoncpp with MSYS2 as an example:
+
+	a) In msys2crt, run 
+
+	pacman -S mingw-w64-ucrt-x86_64-jsoncpp
+
+	b) Add these lines to CMakeList.txt:
+
+
+find_package(jsoncpp REQUIRED)
+
+list (APPEND lib_list "jsoncpp_lib")
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
